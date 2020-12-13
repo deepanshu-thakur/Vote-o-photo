@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% block title %}Polls Result
+{% endblock title %}
+{% block head %}
+<style>
+.overlay{
+  position: fixed;
+  overflow-y: scroll;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10;
+  display: none;
+  background-color: rgba(0,0,0,0.8); /*dim the background*/
+}
+</style>
+{% endblock %}
+{% block content %}
+<nav class="navbar navbar-expand-sm navbar-dark bg-primary">
+    <a class="navbar-brand" href=""><i class="fas fa-poll" style="font-size:150%;"></i></a>
+    <button class="navbar-toggler d-lg-none" type="button" data-toggle="collapse" data-target="#collapsibleNavId"
+        aria-controls="collapsibleNavId" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="collapsibleNavId">
+        <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
+            <li class="nav-item" style="margin-right:30px;font-size: 150%; font-weight: bold;">
+                <a class="nav-link " href="{% url 'home' %}">Home <span class="sr-only">(current)</span></a>
+            </li>
+            <li class="nav-item " style="margin-right:30px;font-size: 150%; font-weight: bold;">
+                <a class="nav-link active" href="{% url 'polls:list' %}">Polls</a>
+            </li>
+        </ul>
+        <div class="navbar-nav ml-auto">
+            {% if request.user.is_authenticated %}
+            <a class="nav-link" style="margin-right:30px;font-size: 150%; font-weight: bold;" href="{% url 'polls:list_by_user' %}">My Polls</a>
+            <a class="nav-link" style="margin-right:30px;font-size: 150%; font-weight: bold;" href="{% url 'accounts:logout' %}">Logout</a>
+            {% else %}
+            <a class="nav-link" style="margin-right:30px;font-size: 150%; font-weight: bold;" href="{% url 'accounts:login' %}">Login</a>
+            <a class="nav-link" style="margin-right:30px;font-size: 150%; font-weight: bold;" href="{% url 'accounts:register' %}">Signup</a>
+            {% endif %}
+        </div>
+    </div>
+</nav>
+
+<div class="containe pollresult">
+<h2 style="text-align:center;">Polls Result</h2>
+    <hr>
+ <!--====================================================================================================================-->
+  {% if poll.content_type %}
+<div id="overlay" class="overlay" style="text-align: center;"
+   onclick="document.getElementById('overlay').style.display = 'none';" >
+<img class="overlayimg" style="" src="{% url 'polls:poll_picture' poll.id %}">
+</div>
+{% endif %}
+
+<h1>{{ poll.title }}</h1>
+{% if poll.content_type %}
+<p>(Click/Tap to zoom.)</p>
+<img class="pollimgresult"style="" src="{% url 'polls:poll_picture' poll.id %}"
+    onclick="document.getElementById('overlay').style.display = 'block';">
+    
+{% endif %}
+
+    <!--===================================================================================================================-->
+    {% if messages %}
+    <div class="messages">
+        {% for message in messages %}
+        <div {% if message.tags %} class="{{ message.tags }}" {% endif %}>{{ message }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="pollgraph" style="">
+        <div class="col-md-12 offset-sm-0" style="">
+            {% if poll.active %}
+            <h3 class="mt-3 mb-3 text-center">Results till now: {{ poll.text }}</h3>
+            {% else %}
+            <h3 class="mt-3 mb-3 text-center">Polling for <b>"{{ poll.text }}"</b> has Ended!</h3>
+            {% endif %}
+            <h3 class="mb-2 text-center">Total: {{ poll.get_vote_count }} votes</h3>
+            <!-- progress bar -->
+            <div class="progress mt-3 mb-2" style="height:30px;">
+                {% for choice in poll.get_result_dict %}
+                <div class="progress-bar bg-{{ choice.alert_class }}" role="progressbar" style="width: {{ choice.percentage }}%;"
+                    aria-valuenow="30" aria-valuemin="0" aria-valuemax="100"><b style="font-size:100%;">
+                        {{choice.text|truncatewords:2}}-{{choice.percentage|floatformat}}%</b>
+                </div>
+                {% endfor %}
+
+            </div>
+            <ul class="list-group">
+                {% for choice in poll.choice_set.all %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    {{ choice.choice_text }}
+                    <span class="badge badge-primary badge-pill">{{ choice.get_vote_count }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+            <a class="btn btn-primary mt-3" href="{% url 'polls:list' %}" role="button">Back To Polls</a>
+            
+        </div>
+
+    </div>
+    
+</div>
+
+{% endblock content %}

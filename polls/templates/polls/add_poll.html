@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+{% block title %}Add Poll
+{% endblock title %}
+{% block content %}
+<nav class="navbar navbar-expand-sm navbar-dark bg-primary">
+    <a class="navbar-brand" href=""><i class="fas fa-poll" style="font-size:150%;"></i></a>
+    <button class="navbar-toggler d-lg-none" type="button" data-toggle="collapse" data-target="#collapsibleNavId"
+        aria-controls="collapsibleNavId" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="collapsibleNavId">
+        <ul class="navbar-nav mr-auto mt-2 mt-lg-0">
+            <li class="nav-item" style="margin-right:30px;font-size: 150%; font-weight: bold;">
+                <a class="nav-link " href="{% url 'home' %}">Home <span class="sr-only">(current)</span></a>
+            </li>
+            <li class="nav-item " style="margin-right:30px;font-size: 150%; font-weight: bold;">
+                <a class="nav-link active" href="{% url 'polls:list' %}">Polls</a>
+            </li>
+        </ul>
+        <div class="navbar-nav ml-auto">
+            {% if request.user.is_authenticated %}
+            <a class="nav-link" style="margin-right:30px;font-size: 150%; font-weight: bold;" href="{% url 'polls:list_by_user' %}">My Polls</a>
+            <a class="nav-link" style="margin-right:30px;font-size: 150%; font-weight: bold;" href="{% url 'accounts:logout' %}">Logout</a>
+            {% else %}
+            <a class="nav-link" style="margin-right:30px;font-size: 150%; font-weight: bold;" href="{% url 'accounts:login' %}">Login</a>
+            <a class="nav-link" style="margin-right:30px;font-size: 150%; font-weight: bold;" href="{% url 'accounts:register' %}">Signup</a>
+            {% endif %}
+        </div>
+    </div>
+</nav>
+
+<div class="container">
+    <div class="row center">
+        <div class="col-md-6 offset-md-3">
+        <div style="" class="signup">
+            <h2 style="text-align:center;">Create new poll</h2>
+            {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                <li {% if message.tags %} class="{{ message.tags }}" {% endif %}>{{ message }}</li>
+                {% endfor %}
+            </ul>
+            {% endif %}
+            <form action="" method="POST" id="upload_form" enctype="multipart/form-data">
+                {% csrf_token %}
+                {% for field in form %}
+                <div class="form-group">
+                    {{ field.errors }}
+                    {{ field.label_tag }}
+                    {{ field }}
+                </div>
+                {% endfor %}
+                <button type="submit" class="btn btn-primary">Add Poll</button>
+                <a class="btn btn-warning" href="{% url 'polls:list' %}" role="button">Back</a>
+            </form>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+$("#upload_form").submit(function() {
+  console.log('Checking file size');
+  if (window.File && window.FileReader && window.FileList && window.Blob) {
+      var file = $('#id_{{ form.upload_field_name }}')[0].files[0];
+      if (file && file.size > {{ form.max_upload_limit }} ) {
+          alert("File " + file.name + " of type " + file.type + " must be < {{ form.max_upload_limit_text }}");
+      return false;
+    }
+  }
+});
+</script>
+{% endblock %}
